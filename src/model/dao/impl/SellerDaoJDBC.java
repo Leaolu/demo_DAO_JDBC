@@ -122,11 +122,18 @@ public class SellerDaoJDBC implements SellerDao {
 		PreparedStatement st = null;
 		try {
 			conn = DB.getConnection();
+			//SQL code that delete the seller with the id given by the placeholder
 			st = conn.prepareStatement(
 					"DELETE FROM seller "
 					+"WHERE Id=?");
+			//set the placeholder to the id passed as parameter
 			st.setInt(1, id);
-			st.executeUpdate();
+			int rows = st.executeUpdate();
+			//if the rows affected is equal to 0, 
+			//implies that the id passed as parameter does not exist in the data base
+			if(rows == 0) {
+				throw new DbException("Unexpected error! id doesn't exist!");
+			}
 		}
 		catch(SQLException e) {
 			throw new DbException(e.getMessage());
