@@ -19,20 +19,24 @@ public class Program2 {
 		System.out.println("\n=== Test 2: department findAll");
 		List<Department> list = departmentDao.findAll();
 		list.stream().forEach(System.out::println);
+		
 		System.out.println("\n=== Test 3: department insert");
 		dep = new Department(null, "Engineering");
 		departmentDao.insert(dep);
 		System.out.println("Insertion completed!");
+		
 		System.out.println("\n=== Test 4: department update");
 		dep = departmentDao.findById(1);
 		dep.setName("Violin");
 		departmentDao.update(dep);
 		System.out.println("Update completed!");
+		
 		System.out.println("\n=== Test 5: department delete");
 		System.out.print("What is the Id of the department you want to delet? "); 
 		int id = sc.nextInt();
 		departmentDao.deleteById(id);
 		System.out.println("Deletion complete");
+		
 		sc.close();
 		
 	}

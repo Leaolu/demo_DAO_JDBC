@@ -11,7 +11,7 @@ import java.util.Properties;
 
 public class DB {
 	private static Connection conn = null;
-	
+	//connects with the data bank if it isn't connected yet
 	public static Connection getConnection() {
 		if(conn == null) {
 			try {
@@ -25,7 +25,7 @@ public class DB {
 		}
 		return conn;
 	}
-	
+	//close the connection with the data Bank
 	public static void closeConnection() {
 		if(conn != null) {
 			try {
@@ -36,6 +36,8 @@ public class DB {
 			}
 		}
 	}
+	//read the data on the file that has the login of the MySQL data Bank
+	//load it's properties so it can do the connection on the getConnection() function
 	private static Properties loadProperties() {
 		try(FileInputStream fs = new FileInputStream("db.properties")){
 			Properties props = new Properties();
@@ -46,7 +48,7 @@ public class DB {
 			throw new DbException(e.getMessage());
 		}
 	}
-	
+	//close the Statement created if it isn't null
 	public static void closeStatement(Statement st) {
 		if(st != null) {
 			try {
@@ -56,7 +58,7 @@ public class DB {
 			}
 		}
 	}
-	
+	//close the ResultSet if it isn't  null
 	public static void closeResultSet(ResultSet rs) {
 		if(rs != null) {
 			try {
