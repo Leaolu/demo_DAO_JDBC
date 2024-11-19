@@ -21,6 +21,24 @@ public class SellerDaoJDBC implements SellerDao {
 	}
 	public SellerDaoJDBC() {
 	}
+	//get the data of the ResultSet and Department and put into a Seller object
+	private Seller instantiateSeller(ResultSet rs, Department dep) throws SQLException{
+		Seller seller = new Seller();
+		seller.setId(rs.getInt("Id"));
+		seller.setName(rs.getString("Name"));
+		seller.setEmail(rs.getString("Email"));
+		seller.setBirthDate(rs.getDate("BirthDate"));
+		seller.setBaseSalary(rs.getDouble("BaseSalary"));
+		seller.setDepartment(dep);
+		return seller;
+	}
+	//get the data of the ResultSet and put into a Department object
+	private Department instatiateDepartment(ResultSet rs) throws SQLException {
+		Department dep = new Department();
+		dep.setId(rs.getInt("DepartmentId"));
+		dep.setName(rs.getString("DepName"));
+		return dep;
+	}
 	@Override
 	public void insert(Seller sell) {
 		// TODO Auto-generated method stub
@@ -57,19 +75,10 @@ public class SellerDaoJDBC implements SellerDao {
 			rs = st.executeQuery();
 			//if rs.next() doesn`t return false
 			if(rs.next()) {
-				//get the data of the data base, put in two objects
-				//Department and seller, and return seller
-				Department dep = new Department();
-				dep.setId(rs.getInt("DepartmentId"));
-				dep.setName(rs.getString("DepName"));
-				Seller seller = new Seller();
-				seller.setId(rs.getInt("Id"));
-				seller.setName(rs.getString("Name"));
-				seller.setEmail(rs.getString("Email"));
-				seller.setBirthDate(rs.getDate("BirthDate"));
-				seller.setBaseSalary(rs.getDouble("BaseSalary"));
-				seller.setDepartment(dep);
+				Department dep = instatiateDepartment(rs);
+				Seller seller = instantiateSeller(rs, dep);
 				return seller;
+				
 			}
 		}
 		catch(SQLException e) {

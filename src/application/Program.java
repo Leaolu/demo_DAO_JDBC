@@ -14,7 +14,7 @@ public class Program {
 		//SellerDao object
 		SellerDao sellerDao = DaoFactory.createSellerDao();
 		
-		//Seller object
+		//Seller object with the id 3 in the data base
 		Seller seller = sellerDao.findById(3);
 		System.out.println(seller);
 		
