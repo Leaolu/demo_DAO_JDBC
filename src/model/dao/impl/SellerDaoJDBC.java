@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +45,45 @@ public class SellerDaoJDBC implements SellerDao {
 	}
 	@Override
 	public void insert(Seller sell) {
-		// TODO Auto-generated method stub
+		PreparedStatement st = null;
+		try {
+			conn = DB.getConnection();
+			//Execute a SQL code to Insert the data of a new seller
+			st = conn.prepareStatement(
+					"INSERT INTO seller "
+					+"(Name, Email, BirthDate, BaseSalary, DepartmentId) "
+					+"VALUES "
+					+"(?, ?, ?, ?, ?)",
+					Statement.RETURN_GENERATED_KEYS);
+			//set all the ? to the data we want to store
+			st.setString(1, sell.getName());
+			st.setString(2,  sell.getEmail());
+			st.setDate(3, new java.sql.Date(sell.getBirthDate().getTime()));
+			st.setDouble(4, sell.getBaseSalary());
+			st.setInt(5,  sell.getDepartment().getId());
+			
+			int rowsAffected = st.executeUpdate();
+			//checks if the rows affected are positive
+			if(rowsAffected > 0) {
+				//if true it checks if rs.next() is true
+				ResultSet rs = st.getGeneratedKeys();
+				if(rs.next()) {
+					//if yes it sets the id of the seller manually
+					int id = rs.getInt(1);
+					sell.setId(id);
+				}
+				DB.closeResultSet(rs);
+			}
+			else {
+				throw new DbException("Unexpected error! No rows affected");
+			}
+		}
+		catch(SQLException e) {
+			throw new DbException(e.getMessage());
+		}
+		finally {
+			DB.closeStatement(st);
+		}
 
 	}
 
@@ -101,14 +140,19 @@ public class SellerDaoJDBC implements SellerDao {
 		ResultSet rs = null;
 		try {
 			conn = DB.getConnection();
+			//Execute SQL code on the data base at mySQL 
+			//get the department and seller sheets together
+			//and find the sellers by the id of the department that they are in
 			st = conn.prepareStatement(
 					"SELECT seller.*,department.Name as DepName "
 					+"FROM seller INNER JOIN department "
 					+"ON seller.DepartmentId = department.Id "
 					+"WHERE DepartmentId = ? " 
 					+"ORDER BY Name");
+			//set the first ? to the Department's id
 			st.setInt(1,  dep.getId());
 			rs = st.executeQuery();
+			//Creates the Seller List and the Map with Integer as key and Department as the data
 			List<Seller> sellerList = new ArrayList<>();
 			Map<Integer, Department> map = new HashMap<>();
 			//rs.next() will return false once there is no more data with this id
@@ -116,11 +160,12 @@ public class SellerDaoJDBC implements SellerDao {
 				//Using HashMap to store the department
 				//avoid implementing multiple objects that are the same
 				dep = map.get(rs.getInt("DepartmentId"));
-				
+				//if there is no map with such key, create one and put into the Map
 				if(dep == null) {
 					dep = instantiateDepartment(rs);
 					map.put(rs.getInt("DepartmentId"), dep);
 				}
+				//create the Seller object and put it into the List
 				Seller seller = instantiateSeller(rs, dep);
 				sellerList.add(seller);
 			}
@@ -136,21 +181,28 @@ public class SellerDaoJDBC implements SellerDao {
 		PreparedStatement st = null;
 		ResultSet rs = null;
 		try {
+			//Create a list of sellers
 			List<Seller> sellers = new ArrayList<>();
 			conn = DB.getConnection();
+			//Execute a SQL code in the mySQL to get all the sellers
+			//combine with all the departments and put the sellers sorted by name
 			st = conn.prepareStatement(
 					"SELECT seller.*,department.Name as DepName "
 					+"FROM seller INNER JOIN department "
 					+"ON seller.DepartmentId = department.Id "
 					+"ORDER BY Name");
 			rs = st.executeQuery();
+			//same logic using Map to avoid creating Departments that are the same
 			Map<Integer, Department> map = new HashMap<>();
 			while(rs.next() != false) {
+				//dep gets the Department with the key DepartmentId
 				Department dep = map.get(rs.getInt("DepartmentId"));
+				//if there is no Department with such key, create one and put into the Map
 				if(dep == null) {
 					dep = instantiateDepartment(rs);
 					map.put(rs.getInt("DepartmentId"), dep);
 				}
+				//create the Seller object and put into the List
 				Seller seller = instantiateSeller(rs, dep);
 				sellers.add(seller);
 			}
